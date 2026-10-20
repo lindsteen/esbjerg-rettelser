@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Sikkerhedsregler for rettelser-siden.
+// Alle kan læse status. Alle kan sætte status på de kendte punkter,
+// men kun feltet "status" (todo, doing, done) og et servertidsstempel.
+// Intet andet kan oprettes, ændres eller slettes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /status/{itemId} {
+      allow read: if true;
+
+      allow create, update: if itemId in [
+          'k1', 'k2', 'k3', 'k4',
+          't6', 'n5',
+          'f1', 'f2', 'f4', 'f5', 'n1',
+          'l2', 'l5', 'l7', 'n2',
+          'n4', 'n6', 'n7',
+          'n3'
+        ]
+        && request.resource.data.keys().hasOnly(['status', 'updatedAt'])
+        && request.resource.data.status in ['todo', 'doing', 'done']
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
